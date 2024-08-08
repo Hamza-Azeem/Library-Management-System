@@ -11,7 +11,7 @@ public interface PatronService {
     public Patron getPatronById(long id);
     public PatronDto getPatronDtoById(long id);
     public void savePatron(PatronDto patron);
-    public PatronDto updatePatron(long id, PatronDto patron);
+    public PatronDto updatePatron(long id, PatronDto patronDto);
     public void deletePatron(long id);
     public void updatePatronBorrowingRecord(Patron patron);
 

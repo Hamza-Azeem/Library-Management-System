@@ -23,7 +23,7 @@ public class Book {
     private String isbn;
     @Column(name = "publication_year")
     private int publicationYear;
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<BorrowingRecord> borrowingRecords;
 
 

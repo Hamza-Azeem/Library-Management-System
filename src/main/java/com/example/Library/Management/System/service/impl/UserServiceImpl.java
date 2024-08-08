@@ -3,6 +3,7 @@ package com.example.Library.Management.System.service.impl;
 import com.example.Library.Management.System.entity.Patron;
 import com.example.Library.Management.System.entity.Role;
 import com.example.Library.Management.System.entity.User;
+import com.example.Library.Management.System.exception.DuplicateResourceException;
 import com.example.Library.Management.System.exception.ResourceNotFoundException;
 import com.example.Library.Management.System.models.RegistrationRequest;
 
@@ -37,6 +38,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void saveUser(RegistrationRequest registrationRequest) {
+        if(userRepository.existsByUsername(registrationRequest.getUsername())){
+            throw new DuplicateResourceException(String.format("User: %s already exists", registrationRequest.getUsername()));
+        }
         User user = new User();
         user.setUsername(registrationRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));

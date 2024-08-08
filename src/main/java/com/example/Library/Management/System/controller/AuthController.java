@@ -2,6 +2,7 @@ package com.example.Library.Management.System.controller;
 
 import com.example.Library.Management.System.models.RegistrationRequest;
 import com.example.Library.Management.System.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegistrationRequest registrationRequest) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest registrationRequest) {
         userService.saveUser(registrationRequest);
         return new ResponseEntity<>("User created!", HttpStatus.CREATED);
     }

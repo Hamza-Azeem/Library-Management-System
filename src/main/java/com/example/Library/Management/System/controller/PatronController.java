@@ -2,6 +2,7 @@ package com.example.Library.Management.System.controller;
 
 import com.example.Library.Management.System.dto.PatronDto;
 import com.example.Library.Management.System.service.PatronService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,14 +25,15 @@ public class PatronController {
         return ResponseEntity.ok(patronService.getPatronDtoById(id));
     }
     @PostMapping
-    public ResponseEntity<?> savePatron(@RequestBody PatronDto patronDto) {
+    public ResponseEntity<?> savePatron(@Valid @RequestBody PatronDto patronDto) {
         patronService.savePatron(patronDto);
         return new ResponseEntity<>("Patron created successfully.", HttpStatus.CREATED);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> updatePatron(@PathVariable Long id, @RequestBody PatronDto patronDto) {
+    public ResponseEntity<?> updatePatron(@PathVariable Long id, @Valid @RequestBody PatronDto patronDto) {
         return ResponseEntity.ok(patronService.updatePatron(id, patronDto));
     }
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePatron(@PathVariable Long id) {
         patronService.deletePatron(id);
         return ResponseEntity.notFound().build();

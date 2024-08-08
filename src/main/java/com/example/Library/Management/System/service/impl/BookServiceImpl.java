@@ -2,7 +2,7 @@ package com.example.Library.Management.System.service.impl;
 
 import com.example.Library.Management.System.dto.BookDto;
 import com.example.Library.Management.System.entity.Book;
-import com.example.Library.Management.System.exception.InValidRequestException;
+import com.example.Library.Management.System.exception.DuplicateResourceException;
 import com.example.Library.Management.System.exception.ResourceNotFoundException;
 import com.example.Library.Management.System.repository.BookRepository;
 import com.example.Library.Management.System.service.BookService;
@@ -46,6 +46,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void saveBook(BookDto bookDto) {
+        if(bookRepository.existsByIsbn(bookDto.getIsbn())){
+            throw new DuplicateResourceException(String.format("Book with isbn %s already exists", bookDto.getIsbn()));
+        }
         bookRepository.save(convertToBook(bookDto));
     }
 
@@ -60,36 +63,18 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookDto updateBook(long bookId, BookDto bookDto) {
-        boolean updated = false;
-        Book book = findBookById(bookId);
-        if(!isBookUpdated(book, bookDto)){
-            throw new InValidRequestException("No updates were found!");
+        if(bookRepository.existsByIsbn(bookDto.getIsbn())){
+            throw new DuplicateResourceException(String.format("Book with isbn %s already exists", bookDto.getIsbn()));
         }
+        Book book = findBookById(bookId);
+        book.setAuthor(bookDto.getAuthor());
+        book.setTitle(bookDto.getTitle());
+        book.setIsbn(bookDto.getIsbn());
+        book.setPublicationYear(bookDto.getPublicationYear());
         return convertToBookDto(bookRepository.save(book));
     }
     @Override
     public void updateBookBorrowingRecord(Book book) {
         bookRepository.save(book);
-    }
-
-    private boolean isBookUpdated(Book book, BookDto bookDto) {
-        boolean updated = false;
-        if(bookDto.getAuthor() != null && !bookDto.getAuthor().equals(book.getAuthor())){
-            book.setAuthor(bookDto.getAuthor());
-            updated = true;
-        }
-        if(bookDto.getTitle() != null && !bookDto.getTitle().equals(book.getTitle())){
-            book.setTitle(bookDto.getTitle());
-            updated = true;
-        }
-        if(bookDto.getIsbn() != null && !bookDto.getIsbn().equals(book.getIsbn())){
-            book.setIsbn(bookDto.getIsbn());
-            updated = true;
-        }
-        if(bookDto.getPublicationYear() != 0 && bookDto.getPublicationYear() != book.getPublicationYear()){
-            book.setPublicationYear(bookDto.getPublicationYear());
-            updated = true;
-        }
-        return updated;
     }
 }

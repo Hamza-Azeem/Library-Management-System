@@ -4,12 +4,15 @@ import com.example.Library.Management.System.dto.PatronDto;
 import com.example.Library.Management.System.entity.Patron;
 import com.example.Library.Management.System.entity.Role;
 import com.example.Library.Management.System.entity.User;
+import com.example.Library.Management.System.exception.DuplicateResourceException;
 import com.example.Library.Management.System.exception.InValidRequestException;
 import com.example.Library.Management.System.exception.ResourceNotFoundException;
+
 import com.example.Library.Management.System.repository.PatronRepository;
 import com.example.Library.Management.System.service.PatronService;
 import com.example.Library.Management.System.service.UserService;
 import jakarta.transaction.Transactional;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -76,6 +79,9 @@ public class PatronServiceImpl implements PatronService {
         if(user.getPatron() != null){
             throw new InValidRequestException("Invalid way to update your patron.");
         }
+        if(patronRepository.existsByEmail(patronDto.getEmail())){
+            throw new DuplicateResourceException(String.format("Patron already exists with email %s", patronDto.getEmail()));
+        }
         Patron patron = patronRepository.save(conertToPatron(patronDto));
         userService.addPatronToUser(user, patron);
     }
@@ -85,31 +91,15 @@ public class PatronServiceImpl implements PatronService {
         if(!isSamePatronOrAdmin(id)){
             throw new InValidRequestException(String.format("Patron id %s is not valid", id));
         }
+        if(patronRepository.existsByEmail(patronDto.getEmail())){
+            throw new DuplicateResourceException(String.format("Patron already exists with email %s", patronDto.getEmail()));
+        }
         Patron patron = findById(id);
-        if(!isPatronUpdated(patron, patronDto)){
-            throw new InValidRequestException("No updates were found!");
-        }
+        patron.setName(patronDto.getName());
+        patron.setAddress(patronDto.getAddress());
+        patron.setEmail(patronDto.getEmail());
+        patron.setPhoneNumber(patronDto.getPhoneNumber());
         return convertToPatronDto(patronRepository.save(patron));
-    }
-    private boolean isPatronUpdated(Patron patron, PatronDto patronDto) {
-        boolean updated = false;
-        if(patronDto.getName() != null && !patronDto.getName().equals(patron.getName())){
-            patron.setName(patronDto.getName());
-            updated = true;
-        }
-        if(patronDto.getEmail() != null && !patronDto.getEmail().equals(patron.getEmail())){
-            patron.setEmail(patronDto.getEmail());
-            updated = true;
-        }
-        if(patronDto.getAddress() != null && !patronDto.getAddress().equals(patron.getAddress())){
-            patron.setAddress(patronDto.getAddress());
-            updated = true;
-        }
-        if(patronDto.getPhoneNumber() != null && !patronDto.getPhoneNumber().equals(patron.getPhoneNumber())){
-            patron.setPhoneNumber(patronDto.getPhoneNumber());
-            updated = true;
-        }
-        return updated;
     }
 
     @Override

@@ -4,4 +4,5 @@ import com.example.Library.Management.System.entity.Patron;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PatronRepository extends JpaRepository<Patron, Long> {
+    boolean existsByEmail(String email);
 }
