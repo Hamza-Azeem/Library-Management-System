@@ -173,3 +173,9 @@ The application uses **MySQL** as the database to persist details about books, p
 ## **Caching**
 
 - A caching mechanism is implemented to ensure fast data retrieval.
+
+## **IMPORTANT NOTE**
+
+- To run all test cases without facing any errors. Please comment the CommandLineRunner function inside of the main function.
+
+
