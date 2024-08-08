@@ -66,6 +66,7 @@ The application integrates role-based security. The roles and their correspondin
 
 ## **API Endpoints**
 
+
 ### **Book Management**
 
 - **GET /api/book:**
@@ -143,6 +144,18 @@ The application integrates role-based security. The roles and their correspondin
 
 - **PUT /api/return/{bookId}/patron/{patronId}:**
   - Record the return of a borrowed book by a patron.
+ 
+### **Authentication**
+
+- **POST /api/auth/register:**
+  - Allow anyone to create a user.
+  - **Request Body:**
+    ```json
+    {
+        "username": "JohnDoe12",
+        "password": "password"
+    }
+    ```
 
 ## **Data Storage**
 
