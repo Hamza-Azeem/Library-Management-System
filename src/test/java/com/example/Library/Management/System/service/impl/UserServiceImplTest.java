@@ -1,11 +1,13 @@
 package com.example.Library.Management.System.service.impl;
 
+import com.example.Library.Management.System.entity.Patron;
 import com.example.Library.Management.System.entity.Role;
 import com.example.Library.Management.System.entity.User;
 import com.example.Library.Management.System.exception.ResourceNotFoundException;
 import com.example.Library.Management.System.models.RegistrationRequest;
 import com.example.Library.Management.System.repository.UserRepository;
 import com.example.Library.Management.System.service.RoleService;
+import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +33,7 @@ class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private RoleService roleService;
+    private Faker faker = new Faker();
     @BeforeEach
     void setUp() {
         underTest = new UserServiceImpl(userRepository, passwordEncoder, roleService);
@@ -77,5 +80,38 @@ class UserServiceImplTest {
         assertThat(actual.getPassword()).isEqualTo(password+"encoded");
         assertThat(actual.getPatron()).isEqualTo(null);
         assertThat(actual.getRoles().size()).isEqualTo(1);
+    }
+    @Test
+    public void addPatronToUser(){
+        // arrange
+        long id = faker.number().randomDigit();
+        String name = faker.name().fullName();
+        String phoneNumber = faker.phoneNumber().cellPhone();
+        String address = faker.address().streetAddressNumber();
+        String email = faker.internet().emailAddress();
+        Role userRole = new Role("USER");
+        Role patronRole = new Role(22L,"PATRON");
+        String username = "HAMZA";
+        String password = "PASSWORD";
+        User user = new User(1L, username, password);
+        user.addRole(userRole);
+        Patron patron = new Patron(
+                id,
+                name,
+                phoneNumber,
+                address,
+                email
+        );
+        when(roleService.getRoleByAuthority("PATRON")).thenReturn(patronRole);
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        // act
+        underTest.addPatronToUser(user, patron);
+        // assert
+        verify(userRepository).save(captor.capture());
+        User actual = captor.getValue();
+        assertThat(actual.getUsername()).isEqualTo(username);
+        assertThat(actual.getRoles().size()).isEqualTo(2);
+        assertThat(actual.getPatron().getId()).isEqualTo(id);
+
     }
 }

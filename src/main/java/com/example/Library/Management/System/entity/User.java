@@ -38,6 +38,11 @@ public class User {
         this.patron = null;
     }
 
+    public User(Long id, String username, String password) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+    }
 
     public void addRole(Role role) {
         if (roles == null) {

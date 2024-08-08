@@ -38,4 +38,12 @@ public class Patron {
         this.email = email;
         this.user = user;
     }
+
+    public Patron(long id, String name, String phoneNumber, String address, String email) {
+        this.id = id;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.email = email;
+    }
 }
