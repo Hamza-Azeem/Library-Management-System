@@ -111,7 +111,7 @@ The application integrates role-based security. The roles and their correspondin
   - Retrieve details of a specific patron by ID.
 
 - **POST /api/patron:**
-  - Add a new patron to the system.
+  - Add a new patron to the system, linked to the currently authenticated user account. The user's information is provided through the `Authorization` header.
   - **Request Body:**
     ```json
     {
