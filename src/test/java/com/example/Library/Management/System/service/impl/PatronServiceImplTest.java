@@ -4,6 +4,7 @@ import com.example.Library.Management.System.dto.PatronDto;
 import com.example.Library.Management.System.entity.Patron;
 import com.example.Library.Management.System.entity.Role;
 import com.example.Library.Management.System.entity.User;
+import com.example.Library.Management.System.exception.DuplicateResourceException;
 import com.example.Library.Management.System.exception.InValidRequestException;
 import com.example.Library.Management.System.repository.PatronRepository;
 import com.example.Library.Management.System.service.UserService;
@@ -205,14 +206,82 @@ class PatronServiceImplTest {
 
 
     @Test
-    void savePatron() {
+    void savePatronWillSavePatron() {
         // Arrange
+        String username = "HAMZA";
+        String password = "PASSWORD";
+        User user = new User(1L, username, password);
+        String email = faker.internet().emailAddress();
+        when(authentication.getName()).thenReturn(username);
+        when(userService.findUserByUsername(username)).thenReturn(user);
+        when(patronRepository.existsByEmail(email)).thenReturn(false);
         ArgumentCaptor<Patron> captor = ArgumentCaptor.forClass(Patron.class);
         // Act
         underTest.savePatron(PatronDto.builder().build());
         // Assert
         verify(patronRepository).save(captor.capture());
         assertThat(captor.getValue()).isNotNull();
+    }
+    @Test
+    void savePatronWillThrowExceptionIfPatronAlreadyExists() {
+        // Arrange
+        String username = "HAMZA";
+        String password = "PASSWORD";
+        User user = new User(1L, username, password);
+        long id = faker.number().randomDigit();
+        String name = faker.name().fullName();
+        String phoneNumber = faker.phoneNumber().cellPhone();
+        String address = faker.address().streetAddressNumber();
+        String email = faker.internet().emailAddress();
+        Patron patron = new Patron(
+                id,
+                name,
+                phoneNumber,
+                address,
+                email,
+                user
+        );
+        PatronDto patronDto = new PatronDto(
+                name,
+                phoneNumber,
+                address,
+                email
+        );
+        user.setPatron(patron);
+        when(authentication.getName()).thenReturn(username);
+        when(userService.findUserByUsername(username)).thenReturn(user);
+        when(patronRepository.existsByEmail(email)).thenReturn(false);
+        // Act
+        // Assert
+        assertThatThrownBy(()-> underTest.savePatron(patronDto))
+                .isInstanceOf(InValidRequestException.class)
+                .hasMessage("Invalid way to update your patron.");
+    }
+    @Test
+    void savePatronWillThrowExceptionIfPatronEmailAlreadyExists() {
+        // Arrange
+        String username = "HAMZA";
+        String password = "PASSWORD";
+        User user = new User(1L, username, password);
+        long id = faker.number().randomDigit();
+        String name = faker.name().fullName();
+        String phoneNumber = faker.phoneNumber().cellPhone();
+        String address = faker.address().streetAddressNumber();
+        String email = faker.internet().emailAddress();
+        PatronDto patronDto = new PatronDto(
+                name,
+                phoneNumber,
+                address,
+                email
+        );
+        when(authentication.getName()).thenReturn(username);
+        when(userService.findUserByUsername(username)).thenReturn(user);
+        when(patronRepository.existsByEmail(email)).thenReturn(true);
+        // Act
+        // Assert
+        assertThatThrownBy(()-> underTest.savePatron(patronDto))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessage(String.format("Patron already exists with email %s", patronDto.getEmail()));
     }
 
     @Test
@@ -251,6 +320,37 @@ class PatronServiceImplTest {
         assertThat(actual.getAddress()).isEqualTo(patronDto.getAddress());
         assertThat(actual.getEmail()).isEqualTo(patronDto.getEmail());
     }
+    @Test
+    void updatePatronWillThrowExceptionIfPatronEmailAlreadyExists() {
+        // Arrange
+        Role role = new Role("PATRON");
+        String username = "HAMZA";
+        String password = "PASSWORD";
+        User user = new User(1L, username, password);
+        user.addRole(role);
+        long id = faker.number().randomDigit();
+        String name = faker.name().fullName();
+        String phoneNumber = faker.phoneNumber().cellPhone();
+        String address = faker.address().streetAddressNumber();
+        String email = faker.internet().emailAddress();
+        Patron patron = new Patron(id, name, phoneNumber, address, email, user);
+        PatronDto patronDto = new PatronDto(
+                name + "updated",
+                phoneNumber + "updated",
+                address + "updated",
+                email + "updated"
+        );
+        when(authentication.getName()).thenReturn(username);
+        when(userService.findUserByUsername(username)).thenReturn(user);
+        when(patronRepository.findById(id)).thenReturn(Optional.of(patron));
+        when(patronRepository.save(patron)).thenReturn(patron);
+        when(patronRepository.existsByEmail(patronDto.getEmail())).thenReturn(true);
+        // Act
+        // Assert
+        assertThatThrownBy(()-> underTest.savePatron(patronDto))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessage(String.format("Patron already exists with email %s", patronDto.getEmail()));
+    }
 
     @Test
     void deletePatron() {
@@ -281,5 +381,11 @@ class PatronServiceImplTest {
         underTest.deletePatron(id);
         // Assert
         verify(patronRepository).delete(patron);
+    }
+    @Test
+    public void updatePatronBorrowingRecord(){
+        Patron patron = Patron.builder().build();
+        underTest.updatePatronBorrowingRecord(patron);
+        verify(patronRepository).save(patron);
     }
 }

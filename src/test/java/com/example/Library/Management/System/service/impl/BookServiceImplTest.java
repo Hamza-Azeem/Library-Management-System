@@ -2,6 +2,7 @@ package com.example.Library.Management.System.service.impl;
 
 import com.example.Library.Management.System.dto.BookDto;
 import com.example.Library.Management.System.entity.Book;
+import com.example.Library.Management.System.exception.DuplicateResourceException;
 import com.example.Library.Management.System.exception.InValidRequestException;
 import com.example.Library.Management.System.exception.ResourceNotFoundException;
 import com.example.Library.Management.System.repository.BookRepository;
@@ -126,6 +127,7 @@ class BookServiceImplTest {
                 publicationYear
         );
         ArgumentCaptor<Book> argument = ArgumentCaptor.forClass(Book.class);
+        when(bookRepository.existsByIsbn(isbn)).thenReturn(false);
         // Act
         underTest.saveBook(bookDto);
         // Assert
@@ -136,6 +138,27 @@ class BookServiceImplTest {
         assertThat(actual.getAuthor()).isEqualTo(author);
         assertThat(actual.getIsbn()).isEqualTo(isbn);
         assertThat(actual.getPublicationYear()).isEqualTo(publicationYear);
+    }
+    @Test
+    void saveBookWillThrowExceptionWhenIsbnIsDuplicate() {
+        // Arrange
+        String title = faker.book().title();
+        String author = faker.book().author();
+        String isbn = faker.code().isbn10();
+        int publicationYear = faker.number().numberBetween(1000, 2024);
+        BookDto bookDto = new BookDto(
+                title,
+                author,
+                isbn,
+                publicationYear
+        );
+        when(bookRepository.existsByIsbn(isbn)).thenReturn(true);
+        // Act
+        when(bookRepository.existsByIsbn(bookDto.getIsbn())).thenReturn(true);
+        // Assert
+        assertThatThrownBy(()->underTest.saveBook(bookDto))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessage(String.format("Book with isbn %s already exists", isbn));
     }
 
     @Test
@@ -181,6 +204,7 @@ class BookServiceImplTest {
                 isbn,
                 publicationYear
         );
+        when(bookRepository.existsByIsbn(bookDto.getIsbn())).thenReturn(false);
         when(bookRepository.findById(id)).thenReturn(Optional.of(book));
         when(bookRepository.save(book)).thenReturn(book);
         // Act
@@ -201,9 +225,9 @@ class BookServiceImplTest {
         int publicationYear = faker.number().numberBetween(1000, 2024);
         BookDto bookDto = new BookDto(
                 title + "updated",
-                null,
-                null,
-                0
+                author,
+                isbn,
+                publicationYear
         );
         Book book = new Book(
                 id,
@@ -212,6 +236,7 @@ class BookServiceImplTest {
                 isbn,
                 publicationYear
         );
+        when(bookRepository.existsByIsbn(isbn)).thenReturn(false);
         when(bookRepository.findById(id)).thenReturn(Optional.of(book));
         when(bookRepository.save(book)).thenReturn(book);
         // Act
@@ -243,6 +268,7 @@ class BookServiceImplTest {
                 isbn,
                 publicationYear
         );
+        when(bookRepository.existsByIsbn(isbn)).thenReturn(false);
         when(bookRepository.findById(id)).thenReturn(Optional.of(book));
         when(bookRepository.save(book)).thenReturn(book);
         // Act
@@ -274,6 +300,7 @@ class BookServiceImplTest {
                 isbn,
                 publicationYear
         );
+        when(bookRepository.existsByIsbn(bookDto.getIsbn())).thenReturn(false);
         when(bookRepository.findById(id)).thenReturn(Optional.of(book));
         when(bookRepository.save(book)).thenReturn(book);
         // Act
@@ -305,6 +332,7 @@ class BookServiceImplTest {
                 isbn,
                 publicationYear
         );
+        when(bookRepository.existsByIsbn(isbn)).thenReturn(false);
         when(bookRepository.findById(id)).thenReturn(Optional.of(book));
         when(bookRepository.save(book)).thenReturn(book);
         // Act
@@ -326,7 +354,7 @@ class BookServiceImplTest {
                 .hasMessage(String.format("Book with id %s not found", id));
     }
     @Test
-    void updateBookWillThrowExceptionWhenUpdatesNotFound() {
+    void updateBookWillThrowExceptionWhenIsbnIsDuplicated() {
         // Arrange
         long id = faker.number().randomDigit();
         String title = faker.book().title();
@@ -337,19 +365,18 @@ class BookServiceImplTest {
                 title,
                 author ,
                 isbn,
-                publicationYear
+                publicationYear + 1
         );
-        Book book = new Book(
-                id,
-                title,
-                author,
-                isbn,
-                publicationYear
-        );
-        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+        when(bookRepository.existsByIsbn(bookDto.getIsbn())).thenReturn(true);
         // Assert
-        assertThatThrownBy(()->underTest.updateBook(id, BookDto.builder().build()))
-                .isInstanceOf(InValidRequestException.class)
-                .hasMessage("No updates were found!");
+        assertThatThrownBy(()->underTest.updateBook(id, bookDto))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessage(String.format("Book with isbn %s already exists", isbn));
+    }
+    @Test
+    public void updateBookBorrowingRecord(){
+        Book book = new Book();
+        underTest.updateBookBorrowingRecord(book);
+        verify(bookRepository).save(book);
     }
 }

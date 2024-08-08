@@ -97,9 +97,6 @@ public class PatronServiceImpl implements PatronService {
     @CacheEvict(value = "patrons", allEntries = true)
     @CachePut(value = "patronId", key = "#id")
     public PatronDto updatePatron(long id, PatronDto patronDto) {
-        if(!isSamePatronOrAdmin(id)){
-            throw new InValidRequestException(String.format("Patron id %s is not valid", id));
-        }
         if(patronRepository.existsByEmail(patronDto.getEmail())){
             throw new DuplicateResourceException(String.format("Patron already exists with email %s", patronDto.getEmail()));
         }

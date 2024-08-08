@@ -21,7 +21,7 @@ public class WebSecurityConfig {
                     auth.requestMatchers(HttpMethod.POST, "/api/books/**").hasAnyAuthority("ADMIN", "MANAGER");
                     auth.requestMatchers(HttpMethod.PUT, "/api/books/**").hasAnyAuthority("ADMIN", "MANAGER");
                     auth.requestMatchers(HttpMethod.DELETE, "/api/books/**").hasAuthority("MANAGER");
-                    auth.requestMatchers(HttpMethod.GET, "/api/patron/**").hasAnyAuthority( "ADMIN", "MANAGER");
+                    auth.requestMatchers(HttpMethod.GET, "/api/patron/**").hasAnyAuthority( "PATRON", "ADMIN", "MANAGER");
                     auth.requestMatchers(HttpMethod.POST, "/api/patron/**").hasAnyAuthority("USER", "ADMIN", "MANAGER");
                     auth.requestMatchers(HttpMethod.PUT, "/api/patron/**").hasAnyAuthority("PATRON", "ADMIN", "MANAGER");
                     auth.requestMatchers(HttpMethod.DELETE, "/api/patron/**").hasAuthority("MANAGER");
