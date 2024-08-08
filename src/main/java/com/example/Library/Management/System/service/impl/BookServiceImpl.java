@@ -6,6 +6,10 @@ import com.example.Library.Management.System.exception.DuplicateResourceExceptio
 import com.example.Library.Management.System.exception.ResourceNotFoundException;
 import com.example.Library.Management.System.repository.BookRepository;
 import com.example.Library.Management.System.service.BookService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +28,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books", key = "'all'")
     public List<BookDto> getAllBooks() {
         return bookRepository.findAll().stream().map(book -> convertToBookDto(book))
                 .collect(Collectors.toList());
@@ -35,6 +40,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "bookId", key = "#id")
     public BookDto getBookDtoById(long id) {
         return convertToBookDto(findBookById(id));
     }
@@ -45,6 +51,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @CacheEvict(value = "books", allEntries = true)
     public void saveBook(BookDto bookDto) {
         if(bookRepository.existsByIsbn(bookDto.getIsbn())){
             throw new DuplicateResourceException(String.format("Book with isbn %s already exists", bookDto.getIsbn()));
@@ -53,6 +60,12 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "books", allEntries = true),
+                    @CacheEvict(value = "bookId", key = "#id")
+            }
+    )
     public void deleteBookById(long id) {
         Optional<Book> bookOptional = bookRepository.findById(id);
         if(bookOptional.isEmpty()){
@@ -62,6 +75,8 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @CacheEvict(value = "books", allEntries = true)
+    @CachePut(value = "bookId", key = "#bookId")
     public BookDto updateBook(long bookId, BookDto bookDto) {
         if(bookRepository.existsByIsbn(bookDto.getIsbn())){
             throw new DuplicateResourceException(String.format("Book with isbn %s already exists", bookDto.getIsbn()));
@@ -74,6 +89,7 @@ public class BookServiceImpl implements BookService {
         return convertToBookDto(bookRepository.save(book));
     }
     @Override
+    @CacheEvict(value = "bookId", key = "#book.id")
     public void updateBookBorrowingRecord(Book book) {
         bookRepository.save(book);
     }

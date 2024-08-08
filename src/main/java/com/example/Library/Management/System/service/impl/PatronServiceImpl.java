@@ -13,6 +13,10 @@ import com.example.Library.Management.System.service.PatronService;
 import com.example.Library.Management.System.service.UserService;
 import jakarta.transaction.Transactional;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -34,6 +38,7 @@ public class PatronServiceImpl implements PatronService {
     }
 
     @Override
+    @Cacheable(value = "patrons", key = "'all'")
     public List<PatronDto> getAllPatrons() {
         return patronRepository.findAll().stream().map(patron -> convertToPatronDto(patron))
                 .collect(Collectors.toList());
@@ -45,6 +50,7 @@ public class PatronServiceImpl implements PatronService {
     }
 
     @Override
+    @Cacheable(value = "patronId", key = "#id")
     public PatronDto getPatronDtoById(long id) {
         return convertToPatronDto(findById(id));
     }
@@ -73,6 +79,7 @@ public class PatronServiceImpl implements PatronService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "patrons", allEntries = true)
     public void savePatron(PatronDto patronDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userService.findUserByUsername(authentication.getName());
@@ -87,6 +94,8 @@ public class PatronServiceImpl implements PatronService {
     }
 
     @Override
+    @CacheEvict(value = "patrons", allEntries = true)
+    @CachePut(value = "patronId", key = "#id")
     public PatronDto updatePatron(long id, PatronDto patronDto) {
         if(!isSamePatronOrAdmin(id)){
             throw new InValidRequestException(String.format("Patron id %s is not valid", id));
@@ -103,6 +112,12 @@ public class PatronServiceImpl implements PatronService {
     }
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "patrons", allEntries = true),
+                    @CacheEvict(value = "patronId", key="#id")
+            }
+    )
     public void deletePatron(long id) {
         Patron patron = findById(id);
         patronRepository.delete(patron);
