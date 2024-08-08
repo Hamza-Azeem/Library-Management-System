@@ -40,6 +40,9 @@ public class PatronServiceImpl implements PatronService {
     @Override
     @Cacheable(value = "patrons", key = "'all'")
     public List<PatronDto> getAllPatrons() {
+        if(!isSamePatronOrAdmin(-1)){
+            throw new InValidRequestException("Request denied.");
+        }
         return patronRepository.findAll().stream().map(patron -> convertToPatronDto(patron))
                 .collect(Collectors.toList());
     }

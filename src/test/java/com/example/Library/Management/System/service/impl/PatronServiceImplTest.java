@@ -52,11 +52,31 @@ class PatronServiceImplTest {
     @Test
     void getAllPatrons() {
         // Arrange
-
+        String username = "hamza";
+        User user = new User(username, "password");
+        Role role = new Role(1L, "MANAGER");
+        user.addRole(role);
+        when(authentication.getName()).thenReturn(username);
+        when(userService.findUserByUsername(username)).thenReturn(user);
         // Act
         underTest.getAllPatrons();
         // Assert
         verify(patronRepository).findAll();
+    }
+    @Test
+    void getAllPatronsWillThrowExceptionIfAccessedByRoleLessThanAdmin() {
+        // Arrange
+        String username = "hamza";
+        User user = new User(username, "password");
+        Role role = new Role(1L, "PATRON");
+        user.addRole(role);
+        when(authentication.getName()).thenReturn(username);
+        when(userService.findUserByUsername(username)).thenReturn(user);
+        // Act
+        // Assert
+        assertThatThrownBy(() -> underTest.getAllPatrons())
+                .isInstanceOf(InValidRequestException.class)
+                .hasMessage("Request denied.");
     }
 
     @Test
