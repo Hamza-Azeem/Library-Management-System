@@ -12,4 +12,5 @@ public interface BookService {
     public void saveBook(BookDto bookDto);
     public void deleteBookById(long id);
     public BookDto updateBook(long bookId, BookDto bookDto);
+    public void updateBookBorrowingRecord(Book book);
 }

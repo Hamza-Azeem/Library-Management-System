@@ -73,6 +73,9 @@ public class PatronServiceImpl implements PatronService {
     public void savePatron(PatronDto patronDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userService.findUserByUsername(authentication.getName());
+        if(user.getPatron() != null){
+            throw new InValidRequestException("Invalid way to update your patron.");
+        }
         Patron patron = patronRepository.save(conertToPatron(patronDto));
         userService.addPatronToUser(user, patron);
     }
@@ -113,6 +116,11 @@ public class PatronServiceImpl implements PatronService {
     public void deletePatron(long id) {
         Patron patron = findById(id);
         patronRepository.delete(patron);
+    }
+
+    @Override
+    public void updatePatronBorrowingRecord(Patron patron) {
+        patronRepository.save(patron);
     }
 
 

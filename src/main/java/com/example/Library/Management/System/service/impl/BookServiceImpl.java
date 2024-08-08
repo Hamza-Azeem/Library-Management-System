@@ -67,6 +67,11 @@ public class BookServiceImpl implements BookService {
         }
         return convertToBookDto(bookRepository.save(book));
     }
+    @Override
+    public void updateBookBorrowingRecord(Book book) {
+        bookRepository.save(book);
+    }
+
     private boolean isBookUpdated(Book book, BookDto bookDto) {
         boolean updated = false;
         if(bookDto.getAuthor() != null && !bookDto.getAuthor().equals(book.getAuthor())){

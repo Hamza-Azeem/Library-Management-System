@@ -13,5 +13,6 @@ public interface PatronService {
     public void savePatron(PatronDto patron);
     public PatronDto updatePatron(long id, PatronDto patron);
     public void deletePatron(long id);
+    public void updatePatronBorrowingRecord(Patron patron);
 
 }
