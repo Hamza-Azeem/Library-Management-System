@@ -178,4 +178,7 @@ The application uses **MySQL** as the database to persist details about books, p
 
 - To run all test cases without facing any errors. Please comment the CommandLineRunner function inside of the main function.
 
+## **Contact**
 
+- **Name:** Hamza Azeem
+- **Email:** hamzaalsherif9@gmail.com
